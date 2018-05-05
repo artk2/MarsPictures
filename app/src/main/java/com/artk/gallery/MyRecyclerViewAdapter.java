@@ -1,10 +1,10 @@
 package com.artk.gallery;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +25,15 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private List<Picture> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private Context context;
+    private boolean mainFragment;
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<Picture> data) {
+    MyRecyclerViewAdapter(Context context, List<Picture> data, boolean mainFragment) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
+        this.context = context;
+        this.mainFragment = mainFragment;
     }
 
     @Override
@@ -40,13 +44,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     }
 
     private void postProcessPic(){
-        MainActivity.picsToLoad--;
-        if(MainActivity.picsToLoad == 0){
-            if(!MainActivity.recyclerView.canScrollVertically(1)){
-                MainActivity.loadData(); // загрузить новые картинки, если еще есть место на экране (в самом начале)
+        if(mainFragment) {
+            MainFragment.picsToLoad--;
+            if (MainFragment.picsToLoad == 0) {
+                if (!MainFragment.recyclerView.canScrollVertically(1)) {
+                    MainFragment.loadData(); // загрузить новые картинки, если еще есть место на экране (в самом начале)
+                } else MainFragment.loading = false;
+                MainFragment.recyclerView.post(() -> MainFragment.adapter.notifyDataSetChanged());
             }
-            else MainActivity.loading = false;
-            MainActivity.recyclerView.post(() -> MainActivity.adapter.notifyDataSetChanged());
         }
     }
 
@@ -54,7 +59,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         Picture picture = mData.get(position);
 
-        Glide.with(MainActivity.context)
+        Glide.with(context)
                 .load(picture.getUrl())
                 .apply(new RequestOptions()
                         .centerCrop()
@@ -76,35 +81,13 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 })
                 .into(holder.imageView);
 
-
-
-//        Bitmap bmp = pic.getBmp();
-//
-//        if(bmp != null) {
-//            int width = bmp.getWidth();
-//            int height = bmp.getHeight();
-//            if(height != width) {
-//                int crop = Math.abs((width - height) / 2);
-//                boolean vertical = width < height;
-//                Bitmap cropBmp;
-//                if (vertical) cropBmp = Bitmap.createBitmap(bmp, 0, crop, width, width);
-//                else cropBmp = Bitmap.createBitmap(bmp, crop, 0, height, height);
-//                holder.imageView.setImageBitmap(cropBmp);
-//            } else holder.imageView.setImageBitmap(bmp);
-//        }
-//        new DownloadImageTask(holder.imageView).execute(pic.getUrl());
-
     }
-
-
-
 
     // total number of rows
     @Override
     public int getItemCount() {
         return mData.size();
     }
-
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

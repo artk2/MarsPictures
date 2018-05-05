@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Recent Pictures from Mars</string>
+    <string name="app_name">Pictures from Mars</string>
+    <string name="full_name">Recent Pictures from Mars</string>
+    <string name="txt_all_pictures">All Pictures</string>
+    <string name="txt_favorites">Favorites</string>
+    <string name="txtDateTaken">Date taken</string>
+    <string name="txtRover">Rover</string>
+    <string name="txtCamera">Camera</string>
+    <string name="dialogText">This is a gallery of the most recent pictures taken by rovers
+        Curiosity and Opportunity on Mars. If you like any picture, you can add it to favorites
+        or share with friends =)</string>
 </resources>

@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Свежие Фото с Марса</string>
+    <string name="app_name">Фото с Марса</string>
+    <string name="full_name">Свежие Фото с Марса</string>
+    <string name="txt_all_pictures">Все фото</string>
+    <string name="txt_favorites">Избранное</string>
+    <string name="txtDateTaken">Дата снимка</string>
+    <string name="txtRover">Марсоход</string>
+    <string name="txtCamera">Камера</string>
+    <string name="dialogText">В данном приложении собраны последние фото с Марса
+        из ежедневно пополняемой базы NASA. Снимки делают марсоходы Curiosity и Opportunity.
+        Если вам понравится фотография, вы можете добавить ее в избранное или поделиться с друзьями =)</string>
 </resources>

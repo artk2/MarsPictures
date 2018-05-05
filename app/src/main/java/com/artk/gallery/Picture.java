@@ -45,17 +45,6 @@ public class Picture {
         this.favorite = favorite;
     }
 
-    @Override public String toString(){
-        StringBuilder sb = new StringBuilder();
-//        sb.append("id: ").append(this.getId()).append("\n");
-        sb.append("date taken: ").append(this.getEarthDate()).append("\n");
-        sb.append("rover: ").append(this.getRover()).append("\n");
-        sb.append("camera: ").append(this.getCamera());
-
-        return sb.toString();
-
-    }
-
     public static Picture copyOf(Picture picture){
         int id = picture.getId();
         String url = picture.getUrl();

@@ -1,72 +1,55 @@
 package com.artk.gallery;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewGroup;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
+import static com.artk.gallery.GalleryActivity.data;
+import static com.artk.gallery.GalleryActivity.favorites;
+import static com.artk.gallery.GalleryActivity.gson;
+import static com.artk.gallery.GalleryActivity.spanCount;
+
+public class MainFragment extends Fragment implements MyRecyclerViewAdapter.ItemClickListener {
 
     static MyRecyclerViewAdapter adapter;
     static RecyclerView recyclerView;
-    static List<Picture> data = new ArrayList<>();
-    static boolean loading = false;
-    static int picsToLoad = 0;
-    int spanCount, screenWidth;
-    static Context context;
-    static Date reqDate = new Date();
-
+    static Calendar cal = Calendar.getInstance();
     private static final String BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/rovers/";
     private static final String[] ROVERS = {"curiosity", "opportunity" /*, "spirit" - нет фото с 2010*/};
     private static final String KEY = "Qh5l5EUypdjnMp9Wd2Wq856F9qezwozXolND0Fw5";
+    // контроль загрузки новых картинок
+    static boolean loading = false;
+    static int picsToLoad = 0;
 
-    static final String tag = "artk2";
-    static final String FAV_FILE = "favorites";
-    static List<Picture> favorites = new ArrayList<>();
-    private static final Gson gson = new Gson();
-
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        screenWidth = getResources().getDisplayMetrics().widthPixels;
-        context = this;
-
-        recyclerView = findViewById(R.id.rvGallery);
-
-        spanCount = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) ? 3 : 5;
-        recyclerView.setLayoutManager(new GridLayoutManager(this, spanCount));
-        adapter = new MyRecyclerViewAdapter(this, data);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        recyclerView = view.findViewById(R.id.rvGallery);
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
+        adapter = new MyRecyclerViewAdapter(getActivity(), data, true);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -87,27 +70,17 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
                 }
             }
         });
-
-        if (getFileStreamPath(FAV_FILE).length() > 0) {
-            String fav_json = readJsonFromFile(context, FAV_FILE);
-            Type listType = new TypeToken<List<Picture>>() {}.getType();
-            favorites = gson.fromJson(fav_json, listType);
-        }
-
+        cal.setTime(new Date());
         loadData();
+        return view;
     }
 
     static void loadData(){
 //        loading = true;
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(reqDate);
-        cal.add(Calendar.DATE, -1);
-        reqDate = cal.getTime();
-
+        cal.add(Calendar.DATE, -1); // меняем дату запроса
+        Date reqDate = cal.getTime();
         Format formatter = new SimpleDateFormat("yyyy-M-d");
         String d = formatter.format(reqDate);
-        Log.i(tag, d);
 
         Thread thread = new Thread(() -> {  // network on main thread exception
             try {
@@ -144,15 +117,17 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
 
     @Override
     public void onItemClick(View view, int position) {
-        Picture picture = adapter.getItem(position);
-        if(picture != null) {
-            Intent intent = new Intent(MainActivity.this, PictureActivity.class);
-            for(Picture favorite : favorites){
-                if (picture.getId() == favorite.getId())
-                    picture.setFavorite(true);
+        if(position >= 0) {
+            Picture picture = adapter.getItem(position);
+            if (picture != null) {
+                Intent intent = new Intent(getActivity(), PictureActivity.class);
+                for (Picture favorite : favorites) {
+                    if (picture.getId() == favorite.getId())
+                        picture.setFavorite(true);
+                }
+                intent.putExtra("Picture", gson.toJson(picture));
+                startActivity(intent);
             }
-            intent.putExtra("Picture", gson.toJson(picture));
-            startActivity(intent);
         }
     }
 
@@ -167,34 +142,5 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         }
     }
 
-
-    static String readJsonFromFile(Context context, String fileName){
-        String json = "";
-        try{
-            FileInputStream in = context.openFileInput(fileName);
-            InputStreamReader is = new InputStreamReader(in);
-            BufferedReader br = new BufferedReader(is);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null)
-                sb.append(line);
-            json = sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return json;
-    }
-
-    static void writeFile(Context context, String fileName, String content){
-        FileOutputStream outputStream;
-        try {
-            outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(content.getBytes());
-            outputStream.close();
-            Log.i(tag, "file written: " + fileName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }
