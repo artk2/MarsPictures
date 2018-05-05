@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_checked="false" android:state_pressed="false"
+        android:drawable="@drawable/ic_star_border_white_36dp" /> <!-- material.io -->
+
+    <!--<item android:state_checked="false" android:state_pressed="true"-->
+        <!--android:drawable="@drawable/btn_star_big_off_pressed" />-->
+
+    <item android:state_checked="true" android:state_pressed="false"
+        android:drawable="@drawable/ic_star_white_36dp" />
+
+    <!--<item android:state_checked="true" android:state_pressed="true"-->
+        <!--android:drawable="@drawable/btn_star_big_off_pressed" />-->
+
+</selector>

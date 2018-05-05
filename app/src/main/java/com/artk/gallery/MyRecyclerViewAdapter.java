@@ -43,7 +43,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         MainActivity.picsToLoad--;
         if(MainActivity.picsToLoad == 0){
             if(!MainActivity.recyclerView.canScrollVertically(1)){
-                MainActivity.loadData();
+                MainActivity.loadData(); // загрузить новые картинки, если еще есть место на экране (в самом начале)
             }
             else MainActivity.loading = false;
             MainActivity.recyclerView.post(() -> MainActivity.adapter.notifyDataSetChanged());

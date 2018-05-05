@@ -9,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -22,12 +24,20 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 
+import java.util.List;
+
+import static com.artk.gallery.MainActivity.FAV_FILE;
+import static com.artk.gallery.MainActivity.favorites;
+import static com.artk.gallery.MainActivity.tag;
+
 public class PictureActivity extends AppCompatActivity {
 
-    ImageView imageView;
-    TextView textView;
-    ProgressBar progressBar;
+    private ImageView imageView;
+    private TextView textView;
+    private ProgressBar progressBar;
+    private ToggleButton toggleButton;
     int screen_height;
+    private final Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,27 +53,14 @@ public class PictureActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imgFullPic);
         textView = findViewById(R.id.textViewDesc);
         progressBar = findViewById(R.id.progress);
-
-
-
+        toggleButton = findViewById(R.id.favorite);
 
         Intent intent = getIntent();
         String json = intent.getStringExtra("Picture");
-
-        Picture picture = new Gson().fromJson(json, Picture.class);
-//        if(picture.getBmp() != null){
-//            Bitmap bitmap = picture.getBmp();
-//            int imageWidth = bitmap.getWidth();
-//            int imageHeight = bitmap.getHeight();
-//            int newWidth = getResources().getDisplayMetrics().widthPixels;
-//            float scaleFactor = (float) newWidth / (float) imageWidth;
-//            int newHeight = (int) (imageHeight * scaleFactor);
-//
-//            bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-//            imageView.setImageBitmap(bitmap);
-//        }
+        final Picture picture = gson.fromJson(json, Picture.class);
 
         textView.setText(picture.toString());
+        toggleButton.setChecked(picture.isFavorite());
 
         textView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
 
@@ -78,12 +75,41 @@ public class PictureActivity extends AppCompatActivity {
 
         });
 
+        toggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            int id = picture.getId();
+            for(Picture pic : MainActivity.data){
+                if(pic.getId() == id){
+                    pic.setFavorite(isChecked);
+                    break;
+                }
+            }
+            if(isChecked){
+                favorites.add(Picture.copyOf(picture));
+                Log.i(tag, "added picture to favorites");
+            } else {
+                int index = -1;
+                for(Picture pic : favorites){
+                    if (pic.getId() == id) {
+                        index = favorites.indexOf(pic);
+                        break;
+                    }
+                }
+                if(index != -1) {
+                    favorites.remove(index);
+                    Log.i(tag, "removed picture from favorites");
+                }
+            }
+//            picture.setFavorite(isChecked);
+            MainActivity.writeFile(getApplicationContext(), FAV_FILE, gson.toJson(favorites));
+            Log.i(tag, "pictures in favorites: " + favorites.size());
+        });
+
         Glide.with(this)
                 .load(picture.getUrl())
                 .apply(new RequestOptions()
-                        .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                        .fitCenter())
+                        .fitCenter()
+                        .error(R.drawable.corrupt_file))
                 .listener(new RequestListener<Drawable>() {
                     @Override public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         progressBar.setVisibility(View.GONE);
@@ -92,6 +118,7 @@ public class PictureActivity extends AppCompatActivity {
                     @Override public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         progressBar.setVisibility(View.GONE);
                         textView.setVisibility(View.VISIBLE);
+                        toggleButton.setVisibility(View.VISIBLE);
                         return false;
                     }
                 })
