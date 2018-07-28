@@ -1,6 +1,5 @@
 package com.artk.gallery;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -30,10 +29,6 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-
-import static com.artk.gallery.GalleryActivity.FAV_FILE;
-import static com.artk.gallery.GalleryActivity.favorites;
 
 public class PictureActivity extends AppCompatActivity {
 
@@ -42,8 +37,11 @@ public class PictureActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ToggleButton toggleButton;
     private ImageButton imageButton;
+
     int screen_height;
     private final Gson gson = new Gson();
+
+    private Picture picture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +58,9 @@ public class PictureActivity extends AppCompatActivity {
         imageButton = findViewById(R.id.btnShare);
 
         String json = getIntent().getStringExtra("Picture");
-        final Picture picture = gson.fromJson(json, Picture.class);
+        picture = gson.fromJson(json, Picture.class);
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(); // TODO: picture.toString()
 //        sb.append("id: ").append(this.getId()).append("\n");
         sb.append(getString(R.string.txtDateTaken)).append(": ").append(picture.getEarthDate()).append("\n");
         sb.append(getString(R.string.txtRover)).append(": ").append(picture.getRover()).append("\n");
@@ -91,7 +89,7 @@ public class PictureActivity extends AppCompatActivity {
                 })
                 .into(imageView);
 
-        // располагаем текст под фото; если не помещается, то внизу экрана
+        // place text under the image; if not enough space, then at the bottom of the screen
         textView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             int imgBottom = imageView.getBottom();
             int tvHeight = textView.getLineCount() * textView.getLineHeight();
@@ -100,86 +98,54 @@ public class PictureActivity extends AppCompatActivity {
                     textView.setY(imgBottom);
                 }
         });
-
-        toggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // обновляем фото в загруженных (если есть)
-            int id = picture.getId();
-            for(Picture pic : GalleryActivity.data){
-                if(pic.getId() == id){
-                    pic.setFavorite(isChecked);
-                    break;
-                }
-            }
-            // обновляем список избранных отдельно
-            if(isChecked){
-                favorites.add(Picture.copyOf(picture));
-                Collections.sort(favorites, (o1, o2) -> Integer.compare(o2.getId(), o1.getId())); // по убыванию id
-            } else {
-                int index = -1;
-                for(Picture pic : favorites){
-                    if (pic.getId() == id) {
-                        index = favorites.indexOf(pic);
-                        break;
-                    }
-                }
-                if(index != -1) {
-                    favorites.remove(index);
-                }
-            }
-//            picture.setFavorite(isChecked);
-            FavoritesFragment.adapter.notifyDataSetChanged();
-            writeFile(getApplicationContext(), FAV_FILE, gson.toJson(favorites));
-        });
-
-        imageButton.setOnClickListener(v -> {
-            progressBar.bringToFront();
-            progressBar.setVisibility(View.VISIBLE);
-            Thread thread = new Thread(() -> {
-                // save bitmap to cache directory
-                Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                if (bitmap != null) {
-                    try {
-                        File cachePath = new File(getApplication().getCacheDir(), "images");
-                        cachePath.mkdirs(); // don't forget to make the directory
-                        FileOutputStream stream = new FileOutputStream(cachePath + "/image.png"); // overwrites this image every time
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                        stream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    // sharing the image
-                    File imagePath = new File(getApplication().getCacheDir(), "images");
-                    File newFile = new File(imagePath, "image.png");
-                    Uri contentUri = FileProvider.getUriForFile(getApplicationContext(),
-                            "com.artk.gallery.fileprovider", newFile);
-
-                    if (contentUri != null) {
-                        Intent shareIntent = new Intent();
-                        shareIntent.setAction(Intent.ACTION_SEND);
-                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
-                        shareIntent.setDataAndType(contentUri, getContentResolver().getType(contentUri));
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                        startActivity(Intent.createChooser(shareIntent, "Choose an app"));
-                        runOnUiThread(() -> progressBar.setVisibility(View.GONE));
-                    }
-
-                }
-
-            });
-            thread.start();
-        });
-
+        toggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> picture.setFavorite(isChecked));
+        imageButton.setOnClickListener(v -> sharePicture());
     }
 
-    static void writeFile(Context context, String fileName, String content){
-        FileOutputStream outputStream;
-        try {
-            outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(content.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putExtra("picture", gson.toJson(picture));
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    private void sharePicture(){
+        progressBar.bringToFront();
+        progressBar.setVisibility(View.VISIBLE);
+        Thread thread = new Thread(() -> {
+            // save bitmap to cache directory
+            Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+            if (bitmap != null) {
+                try {
+                    File cachePath = new File(getApplication().getCacheDir(), "images");
+                    cachePath.mkdirs(); // don't forget to make the directory
+                    FileOutputStream stream = new FileOutputStream(cachePath + "/image.png"); // overwrites this image every time
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // sharing the image
+                File imagePath = new File(getApplication().getCacheDir(), "images");
+                File newFile = new File(imagePath, "image.png");
+                Uri contentUri = FileProvider.getUriForFile(getApplicationContext(),
+                        "com.artk.gallery.fileprovider", newFile);
+
+                if (contentUri != null) {
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
+                    shareIntent.setDataAndType(contentUri, getContentResolver().getType(contentUri));
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                    startActivity(Intent.createChooser(shareIntent, "Choose an app"));
+                    runOnUiThread(() -> progressBar.setVisibility(View.GONE));
+                }
+
+            }
+
+        });
+        thread.start();
     }
 
 }

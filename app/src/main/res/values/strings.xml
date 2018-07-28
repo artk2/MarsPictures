@@ -9,4 +9,8 @@
     <string name="dialogText">This is a gallery of the most recent pictures taken by rovers
         Curiosity and Opportunity on Mars. If you like any picture, you can add it to favorites
         or share with friends =)</string>
+    <string name="content_description_image">A picture from Mars</string>
+    <string name="content_description_share">Share picture</string>
+    <string name="error_server_unavailable">Unable to reach the server</string>
+    <string name="error_failed_to_load">Failed to load data</string>
 </resources>

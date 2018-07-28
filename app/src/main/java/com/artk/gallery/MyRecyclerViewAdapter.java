@@ -1,6 +1,5 @@
 package com.artk.gallery;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -24,16 +23,12 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     private List<Picture> mData;
     private LayoutInflater mInflater;
-    private ItemClickListener mClickListener;
     private Context context;
-    private boolean mainFragment;
 
-    // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<Picture> data, boolean mainFragment) {
+    MyRecyclerViewAdapter(Context context, List<Picture> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this.context = context;
-        this.mainFragment = mainFragment;
     }
 
     @Override
@@ -41,18 +36,6 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         View view = mInflater.inflate(R.layout.recycler_item, parent, false);
 
         return new ViewHolder(view);
-    }
-
-    private void postProcessPic(){
-        if(mainFragment) {
-            MainFragment.picsToLoad--;
-            if (MainFragment.picsToLoad == 0) {
-                if (!MainFragment.recyclerView.canScrollVertically(1)) {
-                    MainFragment.loadData(); // загрузить новые картинки, если еще есть место на экране (в самом начале)
-                } else MainFragment.loading = false;
-                MainFragment.recyclerView.post(() -> MainFragment.adapter.notifyDataSetChanged());
-            }
-        }
     }
 
     @Override
@@ -69,13 +52,15 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        postProcessPic();
+                        if(mLoadedListener != null)
+                            mLoadedListener.onImageLoaded(false);
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        postProcessPic();
+                        if(mLoadedListener != null)
+                            mLoadedListener.onImageLoaded(true);
                         return false;
                     }
                 })
@@ -83,7 +68,6 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     }
 
-    // total number of rows
     @Override
     public int getItemCount() {
         return mData.size();
@@ -107,18 +91,36 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         }
     }
 
-    // convenience method for getting data at click position
     Picture getItem(int id) {
         return mData.get(id);
     }
 
+    public void setData(List<Picture> data){
+        this.mData = data;
+        notifyDataSetChanged();
+    }
+
+    ////////////
+    // CALLBACKS
+
+    private ItemClickListener mClickListener;
+    private PictureLoadedListener mLoadedListener;
+
     // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
+    void setOnClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 
-    // parent activity will implement this method to respond to click events
+    void setOnPictureLoadedListener(PictureLoadedListener listener){
+        this.mLoadedListener = listener;
+    }
+
     public interface ItemClickListener {
         void onItemClick(View view, int position);
     }
+
+    public interface PictureLoadedListener {
+        void onImageLoaded(boolean success);
+    }
+
 }

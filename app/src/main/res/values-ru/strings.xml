@@ -10,4 +10,8 @@
     <string name="dialogText">В данном приложении собраны последние фото с Марса
         из ежедневно пополняемой базы NASA. Снимки делают марсоходы Curiosity и Opportunity.
         Если вам понравится фотография, вы можете добавить ее в избранное или поделиться с друзьями =)</string>
+    <string name="content_description_image">Фотография с Марса</string>
+    <string name="content_description_share">Поделиться</string>
+    <string name="error_server_unavailable">Не удалось подключиться к серверу</string>
+    <string name="error_failed_to_load">Не удалось загрузить фотографии</string>
 </resources>

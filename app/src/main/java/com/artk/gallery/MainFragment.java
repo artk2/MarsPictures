@@ -1,5 +1,6 @@
 package com.artk.gallery;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,50 +11,44 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
-import static com.artk.gallery.GalleryActivity.data;
-import static com.artk.gallery.GalleryActivity.favorites;
+import static android.app.Activity.RESULT_OK;
+import static com.artk.gallery.GalleryActivity.OPEN_PICTURE_CODE;
 import static com.artk.gallery.GalleryActivity.gson;
 import static com.artk.gallery.GalleryActivity.spanCount;
 
-public class MainFragment extends Fragment implements MyRecyclerViewAdapter.ItemClickListener {
+public class MainFragment extends Fragment
+        implements MyRecyclerViewAdapter.ItemClickListener, MyRecyclerViewAdapter.PictureLoadedListener {
 
-    static MyRecyclerViewAdapter adapter;
-    static RecyclerView recyclerView;
-    static Calendar cal = Calendar.getInstance();
-    private static final String BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/rovers/";
-    private static final String[] ROVERS = {"curiosity", "opportunity" /*, "spirit" - нет фото с 2010*/};
-    private static final String KEY = "Qh5l5EUypdjnMp9Wd2Wq856F9qezwozXolND0Fw5";
-    // контроль загрузки новых картинок
-    static boolean loading = false;
-    static int picsToLoad = 0;
+    private GalleryViewModel viewModel;
+    private MyRecyclerViewAdapter adapter;
+    private RecyclerView recyclerView;
+    public static final int SCROLL_DIRECTION_DOWN = 1;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = ViewModelProviders.of(getActivity()).get(GalleryViewModel.class);
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+
         recyclerView = view.findViewById(R.id.rvGallery);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-        adapter = new MyRecyclerViewAdapter(getActivity(), data, true);
-        adapter.setClickListener(this);
+        adapter = new MyRecyclerViewAdapter(getContext(), new ArrayList<>());
+        adapter.setOnClickListener(this);
+        adapter.setOnPictureLoadedListener(this);
         recyclerView.setAdapter(adapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
+//            @Override
 //            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 //                super.onScrollStateChanged(recyclerView, newState);
 //                if (!recyclerView.canScrollVertically(1) && !loading)
@@ -61,58 +56,42 @@ public class MainFragment extends Fragment implements MyRecyclerViewAdapter.Item
 //                    Log.i("hello", "calling load data from on scroll state changed");
 //                    loadData();
 //            }
+            @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy){
-//                super.onScrolled(recyclerView, dx, dy);
-                boolean canScroll = recyclerView.canScrollVertically(1);
-                if (!canScroll && !loading) {
-                    loading = true;
-                    loadData(); // загрузить новые картинки если долистали до конца
+                if(!recyclerView.canScrollVertically(SCROLL_DIRECTION_DOWN)){
+                    viewModel.loadNext(); // load more image when scrolled to the end
                 }
             }
         });
-        cal.setTime(new Date());
-        loadData();
+
+        viewModel.getPictures().observe(this, pictures -> adapter.setData(pictures));
+
+        ProgressBar progressBar = view.findViewById(R.id.progressGallery);
+        viewModel.isLoading().observe(this, isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            viewModel.isLoading().removeObservers(getActivity()); // show progress bar only once
+        });
+
+        viewModel.getMessage().observe(this, msg ->{
+            if(viewModel.canShowMessage()){
+                Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+                viewModel.messageShown(); // show message only once
+                viewModel.getMessage().removeObservers(getActivity());
+            }
+        });
+
         return view;
     }
 
-    static void loadData(){
-//        loading = true;
-        cal.add(Calendar.DATE, -1); // меняем дату запроса
-        Date reqDate = cal.getTime();
-        Format formatter = new SimpleDateFormat("yyyy-M-d");
-        String d = formatter.format(reqDate);
-
-        Thread thread = new Thread(() -> {  // network on main thread exception
-            try {
-                JsonParser parser = new JsonParser();
-                for (String ROVER : ROVERS) {
-                    String request = BASE_URL + ROVER + "/photos?earth_date=" + d + "&api_key=" + KEY;
-                    String json = readJsonFromUrl(request);
-                    JsonObject rootObj = parser.parse(json).getAsJsonObject();
-                    JsonArray arr = rootObj.get("photos").getAsJsonArray();
-                    if (arr != null) {
-                        for (int i = 0; i < arr.size(); i++) {
-                            JsonObject o = arr.get(i).getAsJsonObject();
-                            int id = o.get("id").getAsInt();
-                            String url = o.get("img_src").getAsString();
-                            String date = o.get("earth_date").getAsString();
-                            String rover = o.get("rover").getAsJsonObject().get("name").getAsString();
-                            String camera = o.get("camera").getAsJsonObject().get("full_name").getAsString();
-                            Picture picture = new Picture(id, url, date, rover, camera);
-                            data.add(picture);
-                            picsToLoad++;
-                        }
-                    }
-                    loading = false;
-                    recyclerView.post(() -> adapter.notifyDataSetChanged());
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == OPEN_PICTURE_CODE){
+            if(resultCode == RESULT_OK) {
+                String json = data.getStringExtra("picture");
+                Picture picture = gson.fromJson(json, Picture.class);
+                viewModel.updateFavorites(picture);
             }
-        });
-        thread.start();
-
+        }
     }
 
     @Override
@@ -121,26 +100,26 @@ public class MainFragment extends Fragment implements MyRecyclerViewAdapter.Item
             Picture picture = adapter.getItem(position);
             if (picture != null) {
                 Intent intent = new Intent(getActivity(), PictureActivity.class);
-                for (Picture favorite : favorites) {
-                    if (picture.getId() == favorite.getId())
-                        picture.setFavorite(true);
+                List<Picture> favorites = viewModel.getFavorites().getValue();
+                if (favorites != null) {
+                    for (Picture favorite : viewModel.getFavorites().getValue()) {
+                        if (picture.getId() == favorite.getId())
+                            picture.setFavorite(true);
+                    }
                 }
                 intent.putExtra("Picture", gson.toJson(picture));
-                startActivity(intent);
+                startActivityForResult(intent, OPEN_PICTURE_CODE);
             }
         }
     }
 
-    public static String readJsonFromUrl(String url) throws IOException {
-        try (InputStream is = new URL(url).openStream()) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null)
-                sb.append(line);
-            return sb.toString();
+    @Override
+    public void onImageLoaded(boolean success) {
+        viewModel.imageLoaded();
+        if(viewModel.finishedLoading()){
+            if(!recyclerView.canScrollVertically(SCROLL_DIRECTION_DOWN)){
+                viewModel.loadNext(); // load more pictures if the screen is not full (at the beginning)
+            }
         }
     }
-
-
 }

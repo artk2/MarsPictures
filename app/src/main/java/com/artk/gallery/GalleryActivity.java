@@ -11,18 +11,14 @@ import android.view.WindowManager;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GalleryActivity extends AppCompatActivity {
 
     private SectionsPageAdapter sectionsPageAdapter;
     private ViewPager viewPager;
 
-    static List<Picture> data = new ArrayList<>();
-    static List<Picture> favorites = new ArrayList<>();
-    static final String FAV_FILE = "favorites";
-    static int spanCount, screenWidth;
+    public static final int OPEN_PICTURE_CODE = 1;
+    public static final int SPAN_PORT = 3, SPAN_LAND = 5;
+    public static int spanCount; //, screenWidth;
 
     static final Gson gson = new Gson();
 
@@ -32,8 +28,9 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        screenWidth = getResources().getDisplayMetrics().widthPixels;
-        spanCount = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) ? 3 : 5;
+//        screenWidth = getResources().getDisplayMetrics().widthPixels;
+        spanCount = (getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_PORTRAIT) ? SPAN_PORT : SPAN_LAND;
 
         sectionsPageAdapter = new SectionsPageAdapter(getSupportFragmentManager());
         viewPager = findViewById(R.id.container);
@@ -43,7 +40,6 @@ public class GalleryActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         showGreeting();
-
     }
 
     private void setupViewPager(ViewPager viewPager){
