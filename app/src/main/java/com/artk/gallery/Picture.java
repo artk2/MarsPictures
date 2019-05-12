@@ -9,7 +9,7 @@ public class Picture {
     private final String camera;
     private boolean favorite = false;
 
-    Picture(int id, String url, String earthDate, String rover, String camera) {
+    public Picture(int id, String url, String earthDate, String rover, String camera) {
         this.id = id;
         this.url = url;
         this.earthDate = earthDate;
