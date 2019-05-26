@@ -1,4 +1,4 @@
-package com.artk.gallery;
+package com.artk.gallery.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -11,19 +11,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.artk.gallery.R;
+import com.artk.gallery.data.Picture;
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
-import static com.artk.gallery.GalleryActivity.OPEN_PICTURE_CODE;
-import static com.artk.gallery.GalleryActivity.gson;
-import static com.artk.gallery.GalleryActivity.spanCount;
+import static com.artk.gallery.ui.GalleryActivity.OPEN_PICTURE_CODE;
+import static com.artk.gallery.ui.GalleryActivity.spanCount;
 
-public class FavoritesFragment extends Fragment implements MyRecyclerViewAdapter.ItemClickListener {
+public class FavoritesFragment extends Fragment implements GalleryAdapter.ItemClickListener {
 
     GalleryViewModel viewModel;
     RecyclerView recyclerView;
-    MyRecyclerViewAdapter adapter;
+    GalleryAdapter adapter;
+    private Gson gson = new Gson();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,7 +42,7 @@ public class FavoritesFragment extends Fragment implements MyRecyclerViewAdapter
         recyclerView = view.findViewById(R.id.rvGallery);
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-        adapter = new MyRecyclerViewAdapter(getContext(), new ArrayList<>());
+        adapter = new GalleryAdapter(getContext(), new ArrayList<>());
         adapter.setOnClickListener(this);
         recyclerView.setAdapter(adapter);
 

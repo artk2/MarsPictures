@@ -1,4 +1,4 @@
-package com.artk.gallery;
+package com.artk.gallery.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -8,27 +8,33 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.artk.gallery.R;
+import com.artk.gallery.data.Picture;
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
-import static com.artk.gallery.GalleryActivity.OPEN_PICTURE_CODE;
-import static com.artk.gallery.GalleryActivity.gson;
-import static com.artk.gallery.GalleryActivity.spanCount;
+import static com.artk.gallery.ui.GalleryActivity.OPEN_PICTURE_CODE;
+import static com.artk.gallery.ui.GalleryActivity.spanCount;
 
 public class MainFragment extends Fragment
-        implements MyRecyclerViewAdapter.ItemClickListener, MyRecyclerViewAdapter.PictureLoadedListener {
+        implements GalleryAdapter.ItemClickListener, GalleryAdapter.PictureLoadedListener, GalleryAdapter.BottomOfListListener {
 
     private GalleryViewModel viewModel;
-    private MyRecyclerViewAdapter adapter;
+    private GalleryAdapter adapter;
     private RecyclerView recyclerView;
-    public static final int SCROLL_DIRECTION_DOWN = 1;
+    private Gson gson = new Gson();
+
+    private ProgressBar progressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,43 +47,29 @@ public class MainFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
+        progressBar = view.findViewById(R.id.progressGallery);
+
         recyclerView = view.findViewById(R.id.rvGallery);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-        adapter = new MyRecyclerViewAdapter(getContext(), new ArrayList<>());
+        adapter = new GalleryAdapter(getContext(), new ArrayList<>());
         adapter.setOnClickListener(this);
         adapter.setOnPictureLoadedListener(this);
+        adapter.setBottomOfListListener(this);
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//                if (!recyclerView.canScrollVertically(1) && !loading)
-//                    loading = true;
-//                    Log.i("hello", "calling load data from on scroll state changed");
-//                    loadData();
-//            }
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy){
-                if(!recyclerView.canScrollVertically(SCROLL_DIRECTION_DOWN)){
-                    viewModel.loadNext(); // load more image when scrolled to the end
-                }
+
+        viewModel.getPictures().observe(this, pictures -> {
+            if(pictures == null){
+                Log.v("artk2", "MainFragment: received null");
+                return;
             }
-        });
-
-        viewModel.getPictures().observe(this, pictures -> adapter.setData(pictures));
-
-        ProgressBar progressBar = view.findViewById(R.id.progressGallery);
-        viewModel.isLoading().observe(this, isLoading -> {
-            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            viewModel.isLoading().removeObservers(getActivity()); // show progress bar only once
+            Log.v("artk2", "MainFragment: received " + pictures.size() + " pictures");
+            progressBar.setVisibility(View.GONE);
+            adapter.setData(pictures);
         });
 
         viewModel.getMessage().observe(this, msg ->{
-            if(viewModel.canShowMessage()){
-                Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
-                viewModel.messageShown(); // show message only once
-                viewModel.getMessage().removeObservers(getActivity());
-            }
+            Log.v("artk2","MainFragment message: " + msg);
+            Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
         });
 
         return view;
@@ -115,11 +107,12 @@ public class MainFragment extends Fragment
 
     @Override
     public void onImageLoaded(boolean success) {
-        viewModel.imageLoaded();
-        if(viewModel.finishedLoading()){
-            if(!recyclerView.canScrollVertically(SCROLL_DIRECTION_DOWN)){
-                viewModel.loadNext(); // load more pictures if the screen is not full (at the beginning)
-            }
-        }
+
+    }
+
+    @Override
+    public void onBottomReached() {
+        Log.v("artk2", "bottom reached");
+        viewModel.loadNextPictures();
     }
 }

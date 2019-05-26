@@ -2,7 +2,7 @@ package com.artk.gallery.api;
 
 import android.support.annotation.NonNull;
 
-import com.artk.gallery.Picture;
+import com.artk.gallery.data.Picture;
 
 import java.util.List;
 

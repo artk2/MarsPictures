@@ -1,4 +1,4 @@
-package com.artk.gallery;
+package com.artk.gallery.data;
 
 public class Picture {
 
@@ -43,6 +43,19 @@ public class Picture {
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Picture picture = (Picture) o;
+        return id == picture.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     public static Picture copyOf(Picture picture){

@@ -1,6 +1,6 @@
 package com.artk.gallery.api;
 
-import com.artk.gallery.Picture;
+import com.artk.gallery.data.Picture;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -1,14 +1,15 @@
-package com.artk.gallery;
+package com.artk.gallery.ui;
 
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.view.WindowManager;
 
+import com.artk.gallery.R;
 import com.google.gson.Gson;
 
 public class GalleryActivity extends AppCompatActivity {
@@ -17,8 +18,8 @@ public class GalleryActivity extends AppCompatActivity {
     private ViewPager viewPager;
 
     public static final int OPEN_PICTURE_CODE = 1;
-    public static final int SPAN_PORT = 3, SPAN_LAND = 5;
-    public static int spanCount; //, screenWidth;
+    public static final int SPAN_PORT = 3, SPAN_LAND = 5; // number of columns
+    public static int spanCount;
 
     static final Gson gson = new Gson();
 
@@ -28,7 +29,6 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-//        screenWidth = getResources().getDisplayMetrics().widthPixels;
         spanCount = (getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_PORTRAIT) ? SPAN_PORT : SPAN_LAND;
 

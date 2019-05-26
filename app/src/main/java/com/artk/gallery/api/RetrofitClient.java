@@ -1,7 +1,6 @@
 package com.artk.gallery.api;
 
 import com.artk.gallery.BuildConfig;
-import com.artk.gallery.Picture;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

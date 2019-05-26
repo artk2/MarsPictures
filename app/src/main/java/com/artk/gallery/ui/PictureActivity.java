@@ -1,4 +1,4 @@
-package com.artk.gallery;
+package com.artk.gallery.ui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,6 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.artk.gallery.R;
+import com.artk.gallery.data.Picture;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
