@@ -75,7 +75,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
                 })
                 .into(holder.imageView);
 
-        if(position == data.size() - 2 * span && bottomOfListListener != null){ // TODO: test
+        int checkpoint = 2 * span;
+        if (data.size() < checkpoint || position == data.size() - checkpoint && bottomOfListListener != null) {
             bottomOfListListener.onBottomReached();
         }
 
