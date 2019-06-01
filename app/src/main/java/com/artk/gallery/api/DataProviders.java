@@ -11,7 +11,7 @@ public class DataProviders {
      * We can replace production data with test data
      */
     public static DataProvider create(DataProviderCallback callback) {
-        return test(callback);
+        return production(callback);
     }
 
     // real data provider
