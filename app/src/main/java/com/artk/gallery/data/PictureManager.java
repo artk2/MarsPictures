@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.artk.gallery.api.DataProvider;
 import com.artk.gallery.api.DataProviderCallback;
+import com.artk.gallery.api.DataProviders;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class PictureManager{
 
     public PictureManager(PictureReceiver receiver) {
         this.receiver = receiver;
-        dataProvider = new DataProvider(dataProviderCallback);
+        dataProvider = DataProviders.create(dataProviderCallback);
     }
 
     /**

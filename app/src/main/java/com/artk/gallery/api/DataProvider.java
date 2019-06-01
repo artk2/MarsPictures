@@ -1,108 +1,13 @@
 package com.artk.gallery.api;
 
-import android.support.annotation.NonNull;
-import android.util.Log;
-
-import com.artk.gallery.data.Picture;
-
-import java.net.UnknownHostException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 /**
- * create an instance of this class to receive pictures from the server
+ * Request DataProviders to get one a class implementing this interface and receive pictures
  */
-public class DataProvider {
+public interface DataProvider {
 
     /**
-     * a calendar object is used to manage dates.
-     * each time loadNext() is called, the date is decremented before making a request
+     * requests new pictures from server
      */
-    private final Calendar calendar = Calendar.getInstance();
-    private DataProviderCallback callback;
-
-    /**
-     * a response counter
-     * the data will be returned when amount of responses reaches the amount of calls
-     */
-    private volatile int responses;
-
-    /**
-     * a temporary list to store pictures until all calls are responded
-     */
-    private volatile List<Picture> newPictures;
-
-    public DataProvider(DataProviderCallback callback) {
-        calendar.setTime(new Date());
-        this.callback = callback;
-    }
-
-    /**
-     * load next pile of pictures
-     * the result will be passed to callback provided in constructor
-     */
-    public void loadNext(){
-        calendar.add(Calendar.DATE, -1); // set calendar to previous day
-        Date reqDate = calendar.getTime();
-        Format formatter = new SimpleDateFormat("yyyy-M-d", Locale.getDefault());
-        String date = formatter.format(reqDate);
-        Log.v("artk2", "date: " + date);
-
-        // reset list
-        newPictures = new ArrayList<>();
-        responses = 0;
-
-        // make api calls
-        for(String rover : RetrofitClient.ROVERS){
-            makeCall(date, rover);
-        }
-    }
-
-    private void makeCall(String date, String rover){
-        RetrofitClient.getInstance()
-                .getAPI()
-                .getPictures(rover, date, RetrofitClient.KEY)
-                .enqueue(new Callback<CallResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<CallResponse> call, @NonNull Response<CallResponse> response) {
-                        if(response.body() == null) {
-                            DataProvider.this.onFailure(new NullPointerException("Null response body"));
-                        }
-                        onDataReceived(response.body().pictures());
-                    }
-
-                    @Override
-                    public void onFailure(Call<CallResponse> call, Throwable t) {
-                        DataProvider.this.onFailure(t);
-                    }
-                });
-    }
-
-    private synchronized void onDataReceived(List<Picture> pictures){
-        newPictures.addAll(pictures);
-        if( ++responses == RetrofitClient.ROVERS.length){
-            List<Picture> immutable = Collections.unmodifiableList(newPictures);
-            callback.onDataLoaded(immutable);
-        }
-    }
-
-    private synchronized void onFailure(Throwable t){
-        if(responses >= RetrofitClient.ROVERS.length) return;
-        t.printStackTrace();
-        callback.onFailedToLoad(t);
-
-        responses = RetrofitClient.ROVERS.length; // this guarantees callbacks won't fire anymore
-        calendar.add(Calendar.DATE, 1); // reset date
-    }
+    void loadNext();
 
 }
