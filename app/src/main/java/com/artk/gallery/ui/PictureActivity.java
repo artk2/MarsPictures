@@ -41,7 +41,7 @@ public class PictureActivity extends AppCompatActivity {
     private ImageButton imageButton;
 
     int screen_height;
-    private final Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     private Picture picture;
 
@@ -62,12 +62,7 @@ public class PictureActivity extends AppCompatActivity {
         String json = getIntent().getStringExtra("Picture");
         picture = gson.fromJson(json, Picture.class);
 
-        StringBuilder sb = new StringBuilder(); // TODO: picture.toString()
-//        sb.append("id: ").append(this.getId()).append("\n");
-        sb.append(getString(R.string.txtDateTaken)).append(": ").append(picture.getEarthDate()).append("\n");
-        sb.append(getString(R.string.txtRover)).append(": ").append(picture.getRover()).append("\n");
-        sb.append(getString(R.string.txtCamera)).append(": ").append(picture.getCamera());
-        textView.setText(sb.toString());
+        textView.setText(getPictureInfo(picture));
         toggleButton.setChecked(picture.isFavorite());
 
         Glide.with(this)
@@ -122,6 +117,12 @@ public class PictureActivity extends AppCompatActivity {
             if(shareIntent == null) return;
             startActivity(Intent.createChooser(shareIntent, "Choose an app"));
         }).execute(bitmap);
+    }
+
+    private String getPictureInfo(Picture picture){
+        return getString(R.string.txtDateTaken) + ": " + picture.getEarthDate() + "\n" +
+                getString(R.string.txtRover) + ": " + picture.getRover() + "\n" +
+                getString(R.string.txtCamera) + ": " + picture.getCamera();
     }
 
 }
