@@ -51,7 +51,7 @@ public abstract class GalleryFragment extends Fragment implements GalleryAdapter
 
         recyclerView = view.findViewById(R.id.rvGallery);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-        adapter = new GalleryAdapter(getContext(), new ArrayList<>());
+        adapter = new GalleryAdapter(getContext(), spanCount);
         recyclerView.setAdapter(adapter);
 
         adapter.setOnClickListener(this);

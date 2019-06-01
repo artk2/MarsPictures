@@ -19,6 +19,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
@@ -26,11 +27,17 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     private List<Picture> data;
     private LayoutInflater mInflater;
     private Context context;
+    private int span; // amount of picture columns
 
-    GalleryAdapter(Context context, List<Picture> data) {
+    GalleryAdapter(Context context, List<Picture> data, int span) {
         this.mInflater = LayoutInflater.from(context);
         this.data = data;
         this.context = context;
+        this.span = span;
+    }
+
+    GalleryAdapter(Context context, int span) {
+        this(context, new ArrayList<>(), span);
     }
 
     @Override
@@ -68,7 +75,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
                 })
                 .into(holder.imageView);
 
-        if(position == data.size() - 10 && bottomOfListListener != null){
+        if(position == data.size() - 2 * span && bottomOfListListener != null){ // TODO: test
             bottomOfListListener.onBottomReached();
         }
 
