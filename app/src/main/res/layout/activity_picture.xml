@@ -7,6 +7,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@android:color/black">
 
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/imgFullPic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/content_description_image" />
+
     <ToggleButton
         android:id="@+id/btnFavorite"
         android:layout_width="36dp"
@@ -44,13 +51,6 @@
         android:layout_height="50dp"
         android:layout_centerVertical="true"
         android:visibility="visible" />
-
-    <com.github.chrisbanes.photoview.PhotoView
-        android:id="@+id/imgFullPic"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:contentDescription="@string/content_description_image" />
 
     <TextView
         android:id="@+id/textViewDesc"

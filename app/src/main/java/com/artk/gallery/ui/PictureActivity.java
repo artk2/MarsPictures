@@ -63,7 +63,8 @@ public class PictureActivity extends AppCompatActivity {
                 .load(picture.getUrl())
                 .apply(new RequestOptions()
                         .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                        .fitCenter()
+                        .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+//                        .fitCenter()
                         .error(R.drawable.corrupt_file))
                 .listener(new RequestListener<Drawable>() {
                     @Override public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
