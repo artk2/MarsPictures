@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -28,7 +27,7 @@ public class RealDataProvider implements DataProvider {
      * each time loadNext() is called, the date is decremented before making a request
      */
     private final Calendar calendar = Calendar.getInstance();
-    private DataProviderCallback callback;
+    private DataProvider.Callback callback;
 
     /**
      * a response counter
@@ -41,7 +40,7 @@ public class RealDataProvider implements DataProvider {
      */
     private volatile List<Picture> newPictures;
 
-    RealDataProvider(DataProviderCallback callback) {
+    RealDataProvider(DataProvider.Callback callback) {
         calendar.setTime(new Date());
         this.callback = callback;
     }
@@ -72,7 +71,7 @@ public class RealDataProvider implements DataProvider {
         RetrofitClient.getInstance()
                 .getAPI()
                 .getPictures(rover, date, RetrofitClient.KEY)
-                .enqueue(new Callback<CallResponse>() {
+                .enqueue(new retrofit2.Callback<CallResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<CallResponse> call, @NonNull Response<CallResponse> response) {
                         if (response.body() == null) {

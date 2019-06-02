@@ -3,7 +3,6 @@ package com.artk.gallery.data;
 import android.util.Log;
 
 import com.artk.gallery.api.DataProvider;
-import com.artk.gallery.api.DataProviderCallback;
 import com.artk.gallery.api.DataProviders;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class PictureManager{
         dataProvider.loadNext();
     }
 
-    private DataProviderCallback dataProviderCallback = new DataProviderCallback() {
+    private DataProvider.Callback dataProviderCallback = new DataProvider.Callback() {
         @Override
         public void onDataLoaded(List<Picture> pictures) {
             Log.v("artk2", "PictureManager: received " + pictures.size() + " pictures");

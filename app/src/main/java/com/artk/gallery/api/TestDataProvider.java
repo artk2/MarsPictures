@@ -14,9 +14,9 @@ import java.util.Random;
  */
 public class TestDataProvider implements DataProvider {
 
-    private DataProviderCallback callback;
+    private DataProvider.Callback callback;
 
-    TestDataProvider(DataProviderCallback callback) {
+    TestDataProvider(DataProvider.Callback callback) {
         this.callback = callback;
     }
 
