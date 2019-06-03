@@ -2,26 +2,21 @@ package com.artk.gallery.ui;
 
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.WindowManager;
 
 import com.artk.gallery.R;
-import com.google.gson.Gson;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    private SectionsPageAdapter sectionsPageAdapter;
     private ViewPager viewPager;
 
-    public static final int OPEN_PICTURE_CODE = 1;
     public static final int SPAN_PORT = 3, SPAN_LAND = 5; // number of columns
     public static int spanCount;
-
-    static final Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +27,6 @@ public class GalleryActivity extends AppCompatActivity {
         spanCount = (getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_PORTRAIT) ? SPAN_PORT : SPAN_LAND;
 
-        sectionsPageAdapter = new SectionsPageAdapter(getSupportFragmentManager());
         viewPager = findViewById(R.id.container);
         setupViewPager(viewPager);
 

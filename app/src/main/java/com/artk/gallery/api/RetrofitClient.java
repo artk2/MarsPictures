@@ -16,7 +16,7 @@ public class RetrofitClient {
     private static final String BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/rovers/";
 
     // query parameters
-    static final String KEY = "Qh5l5EUypdjnMp9Wd2Wq856F9qezwozXolND0Fw5"; // TODO: hide
+    static final String KEY = BuildConfig.API_KEY;
     static final String[] ROVERS = {
             "curiosity",
             "opportunity",

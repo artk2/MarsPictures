@@ -5,7 +5,6 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.artk.gallery.R;
 import com.artk.gallery.data.FavoritesManager;
@@ -65,13 +64,10 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
     public void loadNextPictures(){
         if(!loading) { // preventing multiple calls
             loadPictures();
-        } else {
-            Log.v("artk2", "ViewModel loadNextPictures(): already loading");
         }
     }
 
     private void loadPictures(){
-        Log.v("artk2", "ViewModel: loadPictures() called");
         loading = true;
         pictureManager.loadPictures();
     }

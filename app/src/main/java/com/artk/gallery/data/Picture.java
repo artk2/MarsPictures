@@ -7,7 +7,7 @@ public class Picture {
     private final String earthDate;
     private final String rover;
     private final String camera;
-    private boolean favorite = false;
+    private boolean favorite = false; // this field is not necessary anymore
 
     public Picture(int id, String url, String earthDate, String rover, String camera) {
         this.id = id;

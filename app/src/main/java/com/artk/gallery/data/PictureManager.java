@@ -1,7 +1,5 @@
 package com.artk.gallery.data;
 
-import android.util.Log;
-
 import com.artk.gallery.api.DataProvider;
 import com.artk.gallery.api.DataProviders;
 
@@ -25,14 +23,12 @@ public class PictureManager{
      * the result will be passed to callback provided in constructor
      */
     public void loadPictures(){
-        Log.v("artk2", "PictureManager: loadPictures() called");
         dataProvider.loadNext();
     }
 
     private DataProvider.Callback dataProviderCallback = new DataProvider.Callback() {
         @Override
         public void onDataLoaded(List<Picture> pictures) {
-            Log.v("artk2", "PictureManager: received " + pictures.size() + " pictures");
             if(pictures.size() == 0){
                 // if empty list was received, load next
                 loadPictures();
@@ -43,7 +39,6 @@ public class PictureManager{
 
         @Override
         public void onFailedToLoad(Throwable throwable) {
-            Log.v("artk2", "PictureManager: " +  throwable.getLocalizedMessage());
             receiver.onFailedToLoad(throwable);
         }
     };

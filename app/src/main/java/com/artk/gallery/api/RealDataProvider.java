@@ -1,7 +1,6 @@
 package com.artk.gallery.api;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.artk.gallery.data.Picture;
 
@@ -55,7 +54,6 @@ public class RealDataProvider implements DataProvider {
         Date reqDate = calendar.getTime();
         Format formatter = new SimpleDateFormat("yyyy-M-d", Locale.getDefault());
         String date = formatter.format(reqDate);
-        Log.v("artk2", "date: " + date);
 
         // reset list
         newPictures = new ArrayList<>();
