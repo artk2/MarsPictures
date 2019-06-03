@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -29,10 +28,11 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.github.chrisbanes.photoview.PhotoView;
 
 public class PictureDialogFragment extends DialogFragment {
 
-    private ImageView imageView;
+    private PhotoView imageView;
     private TextView textView;
     private ProgressBar progressBar;
     private ToggleButton toggleButton;
@@ -80,7 +80,7 @@ public class PictureDialogFragment extends DialogFragment {
                 .load(picture.getUrl())
                 .apply(new RequestOptions()
                         .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                        .fitCenter()
+                        .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
                         .error(R.drawable.corrupt_file))
                 .listener(new RequestListener<Drawable>() {
                     @Override
