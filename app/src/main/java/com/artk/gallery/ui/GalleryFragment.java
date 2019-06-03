@@ -1,11 +1,11 @@
 package com.artk.gallery.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,11 +17,6 @@ import com.artk.gallery.R;
 import com.artk.gallery.data.Picture;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.app.Activity.RESULT_OK;
-import static com.artk.gallery.ui.GalleryActivity.OPEN_PICTURE_CODE;
 import static com.artk.gallery.ui.GalleryActivity.spanCount;
 
 /**
@@ -62,33 +57,19 @@ public abstract class GalleryFragment extends Fragment implements GalleryAdapter
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == OPEN_PICTURE_CODE){
-            if(resultCode == RESULT_OK) {
-                String json = data.getStringExtra("picture");
-                Picture picture = gson.fromJson(json, Picture.class);
-                viewModel.updateFavorites(picture);
-            }
-        }
-    }
-
-    @Override
     public void onItemClick(View view, int position) {
-        if(position >= 0) {
-            Picture picture = adapter.getItem(position);
-            if (picture != null) {
-                Intent intent = new Intent(getActivity(), PictureActivity.class);
-                List<Picture> favorites = viewModel.getFavorites().getValue();
-                if (favorites != null) {
-                    for (Picture favorite : viewModel.getFavorites().getValue()) {
-                        if (picture.getId() == favorite.getId())
-                            picture.setFavorite(true);
-                    }
-                }
-                intent.putExtra("Picture", gson.toJson(picture));
-                startActivityForResult(intent, OPEN_PICTURE_CODE);
-            }
-        }
+        if (position < 0) return;
+        Picture picture = adapter.getItem(position);
+        if (picture == null) return;
+
+        Bundle b = new Bundle();
+        b.putInt("pictureId", picture.getId());
+
+        PictureDialogFragment dialog = new PictureDialogFragment();
+        dialog.setArguments(b);
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        dialog.show(ft, null);
     }
 
     public GalleryViewModel getViewModel() {

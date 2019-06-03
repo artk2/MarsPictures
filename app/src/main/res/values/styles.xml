@@ -17,4 +17,12 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="FullScreenDialogStyle" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@color/colorBlack</item>
+    </style>
+
 </resources>
