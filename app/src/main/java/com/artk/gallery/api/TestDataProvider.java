@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.artk.gallery.data.Picture;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,7 +23,7 @@ public class TestDataProvider implements DataProvider {
 
     @Override
     public void loadNext() {
-        returnWithDelay(2000);
+        errorWithDelay(8000);
     }
 
     private void returnWithDelay(int ms) {
@@ -38,6 +39,19 @@ public class TestDataProvider implements DataProvider {
             }
         }.start();
         Log.v("artk2", "started timer");
+    }
+
+    private void errorWithDelay(int ms) {
+        new CountDownTimer(ms, 1) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+            }
+
+            @Override
+            public void onFinish() {
+                callback.onFailedToLoad(new UnknownHostException("Test"));
+            }
+        }.start();
     }
 
     private List<Picture> generateList(int size) {
