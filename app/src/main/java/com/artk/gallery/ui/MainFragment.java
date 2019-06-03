@@ -26,6 +26,7 @@ public class MainFragment extends GalleryFragment
 
         getViewModel().getMessage().observe(this, msg ->{
             Log.v("artk2","MainFragment message: " + msg);
+            getProgressBar().setVisibility(View.GONE);
             Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
         });
     }
