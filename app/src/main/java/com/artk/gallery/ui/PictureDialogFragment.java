@@ -134,7 +134,7 @@ public class PictureDialogFragment extends DialogFragment {
         new ShareTask(getActivity().getApplication(), shareIntent -> {
             progressBar.setVisibility(View.GONE);
             if (shareIntent == null) return;
-            startActivity(Intent.createChooser(shareIntent, "Choose an app"));
+            startActivity(Intent.createChooser(shareIntent, getContext().getString(R.string.msg_share_choose_app)));
         }).execute(bitmap);
     }
 

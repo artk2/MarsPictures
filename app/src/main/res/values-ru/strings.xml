@@ -14,4 +14,5 @@
     <string name="content_description_share">Поделиться</string>
     <string name="error_server_unavailable">Не удалось подключиться к серверу</string>
     <string name="error_failed_to_load">Не удалось загрузить фотографии</string>
+    <string name="msg_share_choose_app">Выберите приложение</string>
 </resources>
