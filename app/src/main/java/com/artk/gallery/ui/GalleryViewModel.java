@@ -7,6 +7,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 
 import com.artk.gallery.R;
+import com.artk.gallery.app.Log;
 import com.artk.gallery.data.FavoritesManager;
 import com.artk.gallery.data.Picture;
 import com.artk.gallery.data.PictureManager;
@@ -26,13 +27,15 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
     private MutableLiveData<List<Picture>> favorites;
     private MutableLiveData<String> message;
 
-    private /*volatile*/ boolean loading = false;
+    private boolean loading = false;
 
     public GalleryViewModel(@NonNull Application application){
         super(application);
         pictureList = new ArrayList<>();
-        pictureManager = new PictureManager(this);
+
         favoritesManager = new FavoritesManager(getApplication());
+        pictureManager = new PictureManager();
+        pictureManager.setPictureReceiver(this);
 
         // Load favorites immediately.
         // Why: if user browses new pictures and clicks on one to open full view,
@@ -43,6 +46,7 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
     }
 
     public LiveData<List<Picture>> getPictures(){
+        Log.d("requested pictures");
         if (pictures == null){
             pictures = new MutableLiveData<>();
             loadPictures();
@@ -69,7 +73,7 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
 
     private void loadPictures(){
         loading = true;
-        pictureManager.loadPictures();
+        pictureManager.loadNext();
     }
 
     private void loadFavorites() {
@@ -77,14 +81,17 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
     }
 
     @Override
-    public void onDataLoaded(List<Picture> pictures) {
+    public void onNext(List<Picture> pictures) {
+        Log.i("received " + pictures.size() + " pictures");
         pictureList.addAll(pictures);
         this.pictures.setValue(pictureList);
         loading = false;
     }
 
     @Override
-    public void onFailedToLoad(Throwable t) {
+    public void onError(Throwable t) {
+        Log.e(t);
+
         String msg;
         if(t instanceof UnknownHostException){
             msg = getApplication().getString(R.string.error_server_unavailable);
@@ -127,4 +134,9 @@ public class GalleryViewModel extends AndroidViewModel implements PictureReceive
         favorites.setValue(favoritesManager.getFavorites());
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        pictureManager.removeReceiver();
+    }
 }

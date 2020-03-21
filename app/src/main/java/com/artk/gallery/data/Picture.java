@@ -69,4 +69,8 @@ public class Picture {
         return copy;
     }
 
+    @Override
+    public String toString() {
+        return "Picture " + id + " taken by " + rover + " (camera: " + camera + ") on " + earthDate;
+    }
 }

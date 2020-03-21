@@ -1,4 +1,4 @@
-package com.artk.gallery.api;
+package com.artk.gallery.api.client;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

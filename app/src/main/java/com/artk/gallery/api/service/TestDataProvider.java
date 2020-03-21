@@ -1,8 +1,8 @@
-package com.artk.gallery.api;
+package com.artk.gallery.api.service;
 
 import android.os.CountDownTimer;
-import android.util.Log;
 
+import com.artk.gallery.app.Log;
 import com.artk.gallery.data.Picture;
 
 import java.net.UnknownHostException;
@@ -17,17 +17,19 @@ public class TestDataProvider implements DataProvider {
 
     private DataProvider.Callback callback;
 
-    TestDataProvider(DataProvider.Callback callback) {
-        this.callback = callback;
-    }
-
     @Override
-    public void loadNext() {
+    public void loadNext(DataProvider.Callback callback) {
+        this.callback = callback;
         errorWithDelay(8000);
     }
 
+    @Override
+    public void clear() {
+        callback = null;
+    }
+
     private void returnWithDelay(int ms) {
-        Log.v("artk2", "TestDataProvider: returnWithDelay " + ms);
+        Log.v("returnWithDelay " + ms);
         new CountDownTimer(ms, 1) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -35,10 +37,11 @@ public class TestDataProvider implements DataProvider {
 
             @Override
             public void onFinish() {
-                callback.onDataLoaded(generateList(1));
+                callback.onDataLoaded("2020-02-02", generateList(1));
+                callback = null;
             }
         }.start();
-        Log.v("artk2", "started timer");
+        Log.v("started timer");
     }
 
     private void errorWithDelay(int ms) {
@@ -49,7 +52,8 @@ public class TestDataProvider implements DataProvider {
 
             @Override
             public void onFinish() {
-                callback.onFailedToLoad(new UnknownHostException("Test"));
+                callback.onFailedToLoad("2020-02-02", new UnknownHostException("Test"));
+                callback = null;
             }
         }.start();
     }

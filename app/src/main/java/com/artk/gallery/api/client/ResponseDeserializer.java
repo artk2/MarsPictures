@@ -1,4 +1,4 @@
-package com.artk.gallery.api;
+package com.artk.gallery.api.client;
 
 import com.artk.gallery.data.Picture;
 import com.google.gson.JsonArray;

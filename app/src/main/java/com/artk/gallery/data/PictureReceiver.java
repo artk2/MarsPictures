@@ -4,8 +4,8 @@ import java.util.List;
 
 public interface PictureReceiver {
 
-    void onDataLoaded(List<Picture> pictures);
+    void onNext(List<Picture> pictures);
 
-    void onFailedToLoad(Throwable throwable);
+    void onError(Throwable throwable);
 
 }
