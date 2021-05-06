@@ -1,6 +1,6 @@
 package com.artk.gallery.api.client;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.artk.gallery.data.Picture;
 

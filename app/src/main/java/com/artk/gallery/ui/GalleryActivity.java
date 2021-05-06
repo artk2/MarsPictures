@@ -3,13 +3,14 @@ package com.artk.gallery.ui;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
+
 import com.artk.gallery.R;
+import com.google.android.material.tabs.TabLayout;
 
 public class GalleryActivity extends AppCompatActivity {
 
