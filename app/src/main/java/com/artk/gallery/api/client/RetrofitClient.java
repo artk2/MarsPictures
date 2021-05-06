@@ -22,6 +22,7 @@ public class RetrofitClient {
     public static final String[] ROVERS = {
             "curiosity",
             "opportunity",
+            "perseverance",
             //"spirit" - нет фото с 2010
     };
 
